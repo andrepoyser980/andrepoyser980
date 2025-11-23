@@ -20,12 +20,12 @@
     PowerShell Ver. : 
 
 .USAGE
-    Put any usage instructions here.
+  
     Example syntax:
     PS C:\> .\__remediation_template(STIG-ID-WN10-AU-000500).ps1 
 #>
 
-# YOUR CODE GOES HERE# Define the registry path
+# Define the registry path
 $RegPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\Application"
 
 # Ensure the key exists
