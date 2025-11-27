@@ -11,6 +11,7 @@ I'm passionate about cybersecurity and love tackling complex challenges through 
 ## 🚨 Threat Hunting and Security Operations
 
 - **[Threat Hunting Scenario (Tor Browser Usage)](https://github.com/andrepoyser980/Threat-Hunting-Scenario-tor)**
+- **[Incident Response Report - Virtual Machine Compromise](https://github.com/andrepoyser980/Incident-Response-Report---Virtual-Machine-Compromise)**
 
 <hr/>
 
