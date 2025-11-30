@@ -19,12 +19,10 @@
      are set to "No auditing", or advanced audit policy will be blocked.
 ====================================================================
 
-   -------------------------
-   CREATOR / METADATA BLOCK
-   -------------------------
+    
    Created By      : Andre Poyser
    Date Created    : 2025-11-27
-   Date Tested     : (enter after testing)
+   Date Tested     : 2025-11-27
    Last Updated    : 2025-11-29
    Version         : 1.0.6
 
