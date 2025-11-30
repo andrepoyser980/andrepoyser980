@@ -7,6 +7,7 @@ I'm passionate about cybersecurity and love tackling complex challenges through 
 
 - **[Vulnerability Management Program Implementation](https://github.com/andrepoyser980/Vulnerability-Management-Program)**
 - **[Programmatic Vulnerability Remediations (PowerShell and BASH)](https://github.com/andrepoyser980/Programmatic-Vulnerability-Remediations-PowerShell-and-BASH-)**
+- **[Windows-11-STIG-Remediations Troubleshooting](https://github.com/andrepoyser980/Windows-11-STIG-Remediation)**
 
 ## 🚨 Threat Hunting and Security Operations
 
