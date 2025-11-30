@@ -22,8 +22,7 @@
      - FAIL otherwise (including "No Auditing" or "Failure" only)
 ====================================================================
 
-   CREATOR / METADATA
-   -------------------
+   -----------------
    Created By   : Andre Poyser
    Date Created : 2025-11-30
    Date Tested  : 2025-11-30
