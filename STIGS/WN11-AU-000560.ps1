@@ -7,10 +7,11 @@
      Recommended: Failure (WN11-AU-000565)
 
    This version:
-   - Enables Success AND Failure for "Other Logon/Logoff Events"
-   - Ensures the registry value:
-       HKLM\SYSTEM\CurrentControlSet\Control\Lsa\SCENoApplyLegacyAuditPolicy
-     exists as REG_DWORD = 1 (create if missing).
+   - Enables Success AND Failure for "Other Logon/Logoff Events" (primary)
+   - IF Success is still not enabled, runs backup:
+       auditpol /set /subcategory:"Other Logon/Logoff Events" /success:enable
+   - Ensures:
+       HKLM\SYSTEM\CurrentControlSet\Control\Lsa\SCENoApplyLegacyAuditPolicy = 1
 
    IMPORTANT:
    - Make sure all legacy Audit Policy entries in:
@@ -23,9 +24,9 @@
    -------------------------
    Created By      : Andre Poyser
    Date Created    : 2025-11-27
-   Date Tested     : 
+   Date Tested     : (enter after testing)
    Last Updated    : 2025-11-29
-   Version         : 1.0.5
+   Version         : 1.0.6
 
    NOTES:
    - Run from an elevated PowerShell session.
@@ -217,11 +218,30 @@ function Set-OtherLogonLogoffAuditSuccessAndFailure {
         $result = auditpol.exe /set /subcategory:"Other Logon/Logoff Events" /success:enable /failure:enable 2>&1
 
         if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to set audit policy. Exit code: $LASTEXITCODE`n$result"
+            Write-Error "Failed to set audit policy (Success and Failure). Exit code: $LASTEXITCODE`n$result"
             return $false
         }
 
-        Write-Host "Successfully enabled Success AND Failure auditing for 'Other Logon/Logoff Events'." -ForegroundColor Green
+        Write-Host "Primary path: Successfully enabled Success AND Failure auditing for 'Other Logon/Logoff Events'." -ForegroundColor Green
+        return $true
+    }
+
+    return $false
+}
+
+function Set-OtherLogonLogoffAuditSuccessOnly {
+    [CmdletBinding(SupportsShouldProcess)]
+    param()
+
+    if ($PSCmdlet.ShouldProcess("Advanced Audit Policy", "Enable Success for 'Other Logon/Logoff Events' (backup method)")) {
+        $result = auditpol.exe /set /subcategory:"Other Logon/Logoff Events" /success:enable 2>&1
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Backup path failed to set audit policy (Success only). Exit code: $LASTEXITCODE`n$result"
+            return $false
+        }
+
+        Write-Host "Backup path: Successfully enabled Success auditing for 'Other Logon/Logoff Events'." -ForegroundColor Green
         return $true
     }
 
@@ -233,7 +253,7 @@ function Set-OtherLogonLogoffAuditSuccessAndFailure {
 # region Main
 
 Write-Host "=== STIG Remediation: WN11-AU-000560 (Other Logon/Logoff Events) ===" -ForegroundColor Cyan
-Write-Host "This script enables Success (and Failure) and enforces advanced audit subcategories." -ForegroundColor Cyan
+Write-Host "This script enables Success (and Failure) and enforces advanced audit subcategories, with a backup Success-only path." -ForegroundColor Cyan
 Write-Host ""
 
 Write-Host "[*] Ensuring audit subcategory override is enabled..." -ForegroundColor Yellow
@@ -252,31 +272,40 @@ Write-Host ("Current Subcategory: {0}" -f $current.Subcategory)
 Write-Host ("  Inclusion Setting: {0}" -f $current.InclusionText)
 Write-Host ""
 
-Write-Host "[*] Applying STIG-aligned setting (Success AND Failure)..." -ForegroundColor Yellow
+Write-Host "[*] Applying STIG-aligned setting (Success AND Failure) [Primary Path]..." -ForegroundColor Yellow
 $setResult = Set-OtherLogonLogoffAuditSuccessAndFailure
 
 if ($setResult) {
     Write-Host ""
-    Write-Host "[*] Re-checking setting after change..." -ForegroundColor Yellow
+    Write-Host "[*] Re-checking setting after primary path..." -ForegroundColor Yellow
     $updated = Get-OtherLogonLogoffAuditSetting
 
     if ($null -eq $updated) {
-        Write-Warning "Could not re-read settings after change. Verify manually via secpol.msc or auditpol."
+        Write-Warning "Could not re-read settings after primary change. Verify manually via secpol.msc or auditpol."
     }
     else {
         Write-Host ("Updated Subcategory     : {0}" -f $updated.Subcategory)
         Write-Host ("  Updated Inclusion Set : {0}" -f $updated.InclusionText)
 
-        if ($updated.SuccessEnabled -and $updated.FailureEnabled) {
+        if (-not $updated.SuccessEnabled) {
             Write-Host ""
-            Write-Host "System now aligns with WN11-AU-000560 (Success) and is ready for WN11-AU-000565 (Failure)." -ForegroundColor Green
-        }
-        elseif ($updated.SuccessEnabled) {
-            Write-Host ""
-            Write-Host "System now aligns with WN11-AU-000560 (Success enabled)." -ForegroundColor Green
-        }
-        else {
-            Write-Warning "Success auditing is still not enabled as expected. Check for legacy Audit Policy or other overrides."
+            Write-Host "[!] Success is still not enabled after primary path. Attempting backup path (Success-only)..." -ForegroundColor Yellow
+
+            $backupResult = Set-OtherLogonLogoffAuditSuccessOnly
+
+            if ($backupResult) {
+                Write-Host ""
+                Write-Host "[*] Re-checking setting after backup path..." -ForegroundColor Yellow
+                $updated = Get-OtherLogonLogoffAuditSetting
+
+                if ($null -eq $updated) {
+                    Write-Warning "Could not re-read settings after backup change. Verify manually via secpol.msc or auditpol."
+                }
+                else {
+                    Write-Host ("Updated Subcategory     : {0}" -f $updated.Subcategory)
+                    Write-Host ("  Updated Inclusion Set : {0}" -f $updated.InclusionText)
+                }
+            }
         }
     }
 }
@@ -284,9 +313,12 @@ if ($setResult) {
 # Final compliance-oriented exit code (0 = Success enabled, 1 = not)
 $currentFinal = Get-OtherLogonLogoffAuditSetting
 if ($currentFinal -and $currentFinal.SuccessEnabled) {
+    Write-Host ""
+    Write-Host "System now aligns with WN11-AU-000560 (Success enabled) and may also cover WN11-AU-000565 (Failure), depending on final state." -ForegroundColor Green
     exit 0
 }
 else {
+    Write-Warning "Success auditing is still not enabled as expected. Check for legacy Audit Policy or other overrides."
     exit 1
 }
 
