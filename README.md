@@ -13,6 +13,7 @@ I'm passionate about cybersecurity and love tackling complex challenges through 
 
 - **[Threat Hunting Scenario (Tor Browser Usage)](https://github.com/andrepoyser980/Threat-Hunting-Scenario-tor)**
 - **[Incident Response Report - Virtual Machine Compromise](https://github.com/andrepoyser980/Incident-Response-Report---Virtual-Machine-Compromise)**
+- **[Threat Hunt Report - Cargo Hold](https://github.com/andrepoyser980/Cargo-hold-Threat-Hunt-Report)**
 - **[Threat Hunt Report - Cargo Hold/Bridge Takeover](https://github.com/andrepoyser980/Cargo-Hold-Bridge-Takeover)**
 
 <hr/>
